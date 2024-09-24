@@ -7,6 +7,7 @@ list.files()
 vcf <- read.vcfR("variants/Centaurea_filtered.vcf.gz")
 head(vcf)
 
+X11.options(type="cairo")
 #fixed section contains info of each snit
 # genotype section has matrix of rows and columns
 
