@@ -37,3 +37,27 @@ zcat view a zipped file
 \|head to view first 10 lines of a file
 
 \| "pipe" send output of one fxn to another
+
+### 09-17-2024 - VCF File Stuff
+
+So I was absent last class so this was a lot of catching up to do
+
+Today we filtered the VCF file so that there was more concise data that you could look at
+
+We set the depth
+
+We created heatmaps
+
+### 09-19-2024
+
+lots of notes on 02_Diversity_Differentiation
+
+Today we focused on creating Manhattan plots for our filtered data
+
+we pulled our filtered data from last class from our outputs folder and assigned it the name vcf so that it is the updated version.
+
+we looked at the meta data of the file using the head function
+
+### 9-24-24 Hs averages and stuff
+
+check code for notes, did lots of stuff with Count of SNPs vs Gene diveristy within Regions
