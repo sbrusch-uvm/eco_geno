@@ -42,7 +42,7 @@ zcat view a zipped file
 
 So I was absent last class so this was a lot of catching up to do
 
-Today we filtered the VCF file so that there was more concise data that you could look at
+Today we filtered the VCF file so that there was more concise data that you could look at this is saved under 01_VCF_Filtering(Correct Location)
 
 We set the depth
 
@@ -61,3 +61,25 @@ we looked at the meta data of the file using the head function
 ### 9-24-24 Hs averages and stuff
 
 check code for notes, did lots of stuff with Count of SNPs vs Gene diveristy within Regions
+
+### 09-26-2024 - Intro to Admixture and Cross Validation
+
+Okay so, we didn't do too much crazy coding today
+
+made a ggplot of the PCA plot of PC1 vs PC2, we saved the plot to the figures file
+
+We learned how admixture works
+
+-   ex. 2 subpopulations in 1 sample the user makes a k \# of groups
+
+-   assign individuals to 1 of the k groups
+
+-   calc the allele freq in each group
+
+-   calc 2pq and compare that to the observed freq of Het
+
+-   if that previous step wasn't very accurate then repeat the process in different groups
+
+Cross validation splits data into a training set and a testing set
+
+this wont work for self-fertilizing plants
