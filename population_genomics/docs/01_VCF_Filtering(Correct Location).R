@@ -90,7 +90,9 @@ meta2$id = as.factor(meta2$id)
 meta2$pop = as.factor(meta2$pop)
 # this makes it factors
 
-vcf.filt.indMiss <- missing_by_sample(vcf.filt, popmap = meta2, cutoff = 0.75)
+vcf.filt.indMiss <- missing_by_sample(vcf.filt, 
+                                      popmap = meta2, 
+                                      cutoff = 0.75)
 #individual level of missingness
 #the different rows is different options
 # cutoff 0 means it doesn't filter anyone out
