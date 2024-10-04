@@ -1,0 +1,1 @@
+setwd("~/Projects/eco_geno/population_genomics/docs/")
