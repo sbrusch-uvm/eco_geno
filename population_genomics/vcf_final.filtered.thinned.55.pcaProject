@@ -1,0 +1,6 @@
+new("pcaProject", projDir = "/gpfs1/home/s/b/sbrusch/Projects/eco_geno/population_genomics/outputs/", 
+    pcaDir = "vcf_final.filtered.thinned.55.pca/", n = 488L, 
+    L = 3910L, K = 488L, center = TRUE, scale = TRUE, pcaProject.file = "vcf_final.filtered.thinned.55.pcaProject", 
+    input.file = "vcf_final.filtered.thinned.55.lfmm", eigenvalue.file = "vcf_final.filtered.thinned.55.eigenvalues", 
+    eigenvector.file = "vcf_final.filtered.thinned.55.eigenvectors", 
+    sdev.file = "vcf_final.filtered.thinned.55.sdev", projection.file = "vcf_final.filtered.thinned.55.projections")

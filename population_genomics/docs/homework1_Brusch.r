@@ -1,13 +1,14 @@
 setwd("~/Projects/eco_geno/population_genomics/docs/")
-#this allowed me to save this file to my repo
+#this allowed me to save this to my repo when first creating this file
+
 library(vcfR)
-setwd("/gpfs1/cl/pbio3990/PopulationGenomics/")
+X11.options(type="cairo") # easier for the plots/graphing
+setwd("/gpfs1/cl/pbio3990/PopulationGenomics/") #sets the working directory so that I can access the centaurea data
 list.files()
 
-vcf <- read.vcfR("variants/Centaurea_filtered.vcf.gz")
+vcf <- read.vcfR("variants/Centaurea_filtered.vcf.gz") #accesses the centaurea file
 head(vcf)
 
-X11.options(type="cairo")
 
 dna <- ape::read.dna("reference/GCA_030169165.1_ASM3016916v1_genomic.fa.gz", format = "fasta")
 gff <- read.table("reference/GCA_030169165.1_ASM3016916v1_genomic_genes.gff.gz", sep = "\t", quote = "")
@@ -15,17 +16,14 @@ gff <- read.table("reference/GCA_030169165.1_ASM3016916v1_genomic_genes.gff.gz",
 
 DP <- extract.gt(vcf, element="DP", as.numeric=T)
 DP[1:5, 1:10]
-
 quantile(DP)
-
 DP[DP==0] <- NA
-
 quantile(DP, na.rm=T)
 
 heatmap.bp(DP[1:1000,], rlabels = F, clabels = F)
 
-library(SNPfiltR)
 
+library(SNPfiltR)
 
 
 vcf.filt <- hard_filter(vcf, depth=3)
@@ -36,11 +34,10 @@ vcf.filt <- max_depth(vcf.filt, maxdepth=60)
 
 meta <- read.csv("metadata/meta4vcf.csv", header = T)
 meta2 <- meta[,c(1,4)]
-
 names(meta2) <- c("id", "pop")
-
 meta2$id = as.factor(meta2$id)
 meta2$pop = as.factor(meta2$pop)
+
 
 vcf.filt.indMiss <- missing_by_sample(vcf.filt, 
                                       popmap = meta2, 
@@ -49,8 +46,6 @@ vcf.filt.indMiss <- missing_by_sample(vcf.filt,
 
 vcf.filt.indMiss <- filter_biallelic(vcf.filt.indMiss)
 vcf.filt.indMiss <- min_mac(vcf.filt.indMiss, min.mac = 1)
-
-
 vcf.filt.indSNPMiss <- missing_by_snp(vcf.filt.indMiss, cutoff = 0.5)
 
 DP2 <- extract.gt(vcf.filt.indSNPMiss, element="DP", as.numeric=T)
@@ -60,62 +55,104 @@ heatmap.bp(DP2[1:5000,],
 
 write.vcf(vcf.filt.indSNPMiss,
           "~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered0.8.vcf.gz")
-# for second filtering save, I changed the name to vcf_final_filtered0.55.vcf.gz
+# for second filtering save, I changed the name to vcf_final_filtered0.55.vcf.gz after rerunning the program
+
+#########################################################################
+
+library (vcfR)
+library(tidyverse)
+library(qqman)
+
+vcf <- read.vcfR("~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered0.8.vcf.gz")
+#first time with file vcf_final.filtered0.8.vcf.gz then with .filtered0.55.vcf.gz
 
 
-##############################################################################
+meta <- read.csv("/gpfs1/cl/pbio3990/PopulationGenomics/metadata/meta4vcf.csv")
+head(meta)
+dim(meta)
+meta2 <- meta[meta$id %in% colnames(vcf@gt[,-1]),]
+
+vcf.div <- genetic_diff(vcf, pops = as.factor(meta2$region), method = "nei")
+
+
+str(vcf.div)
+chr.main <- unique(vcf.div$CHROM)[1:8]
+chrnum <- as.data.frame(cbind(chr.main, seq(1, 8, 1)))
+
+vcf.div.MHplot <- left_join(chrnum, vcf.div, join_by(chr.main==CHROM))
+vcf.div.MHplot <- vcf.div.MHplot %>% filter(Gst>0) %>% mutate(SNP=paste0(chr.main, "_", POS))
+vcf.div.MHplot$V2 = as.numeric(vcf.div.MHplot$V2)
+vcf.div.MHplot$POS = as.numeric(vcf.div.MHplot$POS)
+
+
+names(vcf.div.MHplot)
+
+
+vcf.div.MHplot %>% 
+  as_tibble()%>%
+  pivot_longer(c(4:9)) %>%
+  ggplot(aes(x=value, fill=name)) + 
+  geom_histogram(position = "identity", alpha=0.5, bins=50) +
+  labs(title = "Genome-wide expected heterozygosity (Hs)", fill="Regions", 
+       x="Gene diversity within Regions", y="Counts of SNPs")
+ggsave("Histogram_Genome_Diverity_byRegion0.55.pdf", 
+       path="~/Projects/eco_geno/population_genomics/figures/")
+
+
+
+
+vcf.div.MHplot %>% 
+  as_tibble()%>%
+  pivot_longer(c(4:9)) %>%
+  group_by(name) %>% 
+  filter(value!=0 & value<0.25) %>% #take out all the SNPs with 0 values, != means does not equal
+  summarise(avgHs=mean(value), StdDev_Hs=sd(value), N_Hs=n()) 
+
+
+#################################################################################################
 
 library(tidyverse)
 library(vcfR)
 library(SNPfiltR)
-library(LEA)
+library(LEA) 
 
-options(bitmapType = "cairo")
+setwd("~/Projects/eco_geno/population_genomics/") 
 
-setwd("~/Projects/eco_geno/population_genomics/")
+vcf <- read.vcfR("outputs/vcf_final.filtered0.55.vcf.gz") 
+# first run through is the 0.8 cuttoff and the second runthrough is the 0.55 cutoff
 
-vcf <- read.vcfR("outputs/vcf_final.filtered0.8.vcf.gz")
-
-#we need to thin in the SNPs for LD (linkage disequilibrium) before 
-#we reun PCA and Admixture analyses to satisfy the assumptions of independence among loci
-
-vcf.thin <- distance_thin(vcf, min.distance = 500)
-#new vcf file based on giving it the og vcf file and thin it 500 bp
-#we learned most of our SNPs are stacked since 3646/15454 weren't located within 500bp of another SNP
+vcf.thin.55 <- distance_thin(vcf, min.distance=500) 
 
 meta <- read.csv("/gpfs1/cl/pbio3990/PopulationGenomics/metadata/meta4vcf.csv")
 dim(meta)
-
-
-meta2 <- meta[meta$id %in% colnames(vcf@gt[,-1]), ]
-## edited vcf.thin to vcf 10/1/24
+meta2 <- meta[meta$id %in% colnames(vcf@gt[, -1]) , ]
 dim(meta2)
 
-write.vcf(vcf.thin, "outputs/vcf_final.filtered.thinned.vcf.gz")
+write.vcf(vcf.thin.55, "outputs/vcf_final.filtered.thinned.55.vcf.gz")
 
-#now we need to uncompress it
-#hide the uncompressed vcf file too big for github outside of repo
+system("gunzip -c ~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered.thinned.55.vcf.gz > ~/vcf_final.filtered.thinned.55.vcf")
 
-system("gunzip -c ~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered.thinned.vcf.gz > ~/vcf_final.filtered.thinned.vcf")
+geno.55 <- vcf2geno(input.file = "/gpfs1/home/s/b/sbrusch/vcf_final.filtered.thinned.55.vcf", 
+                 output.file = "outputs/vcf_final.filtered.thinned.55.geno")
 
-CentPCA <- LEA::pca("outputs/vcf_final.filtered.thinned.geno", scale=TRUE)
+CentPCA <- LEA::pca("outputs/vcf_final.filtered.thinned.55.geno", scale=TRUE)
 
-
-plot(CentPCA$projections, 
-     col=as.factor(meta2$region))
-legend("bottomright", 
-       legend=as.factor(unique(meta2$region)), 
-       fill=as.factor(unique(meta2$region)))
-
-
-CentPCA <- load.pcaProject("vcf_final.filtered.thinned.pcaProject")
+CentPCA <- load.pcaProject("vcf_final.filtered.thinned.55.pcaProject")
 
 show(CentPCA)
-
 plot(CentPCA)
 
+plot(CentPCA$projections,
+     col=as.factor(meta2$region))
+legend("bottomright", 
+      legend=as.factor(unique(meta2$region)),
+    fill=as.factor(unique(meta2$region)))
+
 ggplot(as.data.frame(CentPCA$projections),
-       aes(x=V1, y=V2, color=meta2$region, shape=meta2$continent))+
-  geom_point(alpha=1) +
-  labs(title="Centaurea genetic PCA", x="PC1", y="PC2", color="Region", shape="Continent")
-# cou
+       aes(x=V1, y=V2, color=meta2$region, shape=meta2$continent)) +
+  geom_point(alpha=0.5) +
+  labs(title="Centaurea genetic PCA",x="PC1 (2.2%)",y="PC2 (1.1%)",color="Region",shape="Continent") 
+#        xlim(-10,10) +
+#        ylim(-10,10)
+
+ggsave("figures/CentPCA.55_PC1vPC2.pdf", width=6, height=6, units ="in")
