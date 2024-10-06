@@ -1,12 +1,22 @@
 setwd("~/Projects/eco_geno/population_genomics/docs/")
 #this allowed me to save this to my repo when first creating this file
 
+## libraries used
 library(vcfR)
+library(SNPfiltR)
+library(tidyverse)
+library(qqman)
+library(LEA) 
+
+
+## anywhere an .8 or .55 is, those are the new thresholds of missingness
+## that being said, if the program is running to analyze an 80% cuffoff value, all sections must be specific for 0.8 and vice versa
+
 X11.options(type="cairo") # easier for the plots/graphing
 setwd("/gpfs1/cl/pbio3990/PopulationGenomics/") #sets the working directory so that I can access the centaurea data
 list.files()
 
-vcf <- read.vcfR("variants/Centaurea_filtered.vcf.gz") #accesses the centaurea file
+vcf <- read.vcfR("variants/Centaurea_filtered.vcf.gz") #accesses the centaurea file within the vairants file
 head(vcf)
 
 
@@ -20,17 +30,13 @@ quantile(DP)
 DP[DP==0] <- NA
 quantile(DP, na.rm=T)
 
-heatmap.bp(DP[1:1000,], rlabels = F, clabels = F)
-
-
-library(SNPfiltR)
+heatmap.bp(DP[1:1000,], rlabels = F, clabels = F) #this heatmap is for all the data
 
 
 vcf.filt <- hard_filter(vcf, depth=3)
-
-
 max_depth(vcf.filt)
 vcf.filt <- max_depth(vcf.filt, maxdepth=60) 
+
 
 meta <- read.csv("metadata/meta4vcf.csv", header = T)
 meta2 <- meta[,c(1,4)]
@@ -41,7 +47,7 @@ meta2$pop = as.factor(meta2$pop)
 
 vcf.filt.indMiss <- missing_by_sample(vcf.filt, 
                                       popmap = meta2, 
-                                      cutoff = 0.8) #for second graph change value to 0.55
+                                      cutoff = 0.55) 
 
 
 vcf.filt.indMiss <- filter_biallelic(vcf.filt.indMiss)
@@ -54,16 +60,14 @@ heatmap.bp(DP2[1:5000,],
            rlabels=F, clabels=F)
 
 write.vcf(vcf.filt.indSNPMiss,
-          "~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered0.8.vcf.gz")
+          "~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered0.55.vcf.gz")
 # for second filtering save, I changed the name to vcf_final_filtered0.55.vcf.gz after rerunning the program
 
 #########################################################################
 
-library (vcfR)
-library(tidyverse)
-library(qqman)
 
-vcf <- read.vcfR("~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered0.8.vcf.gz")
+
+vcf <- read.vcfR("~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered0.55.vcf.gz")
 #first time with file vcf_final.filtered0.8.vcf.gz then with .filtered0.55.vcf.gz
 
 
@@ -83,8 +87,6 @@ vcf.div.MHplot <- left_join(chrnum, vcf.div, join_by(chr.main==CHROM))
 vcf.div.MHplot <- vcf.div.MHplot %>% filter(Gst>0) %>% mutate(SNP=paste0(chr.main, "_", POS))
 vcf.div.MHplot$V2 = as.numeric(vcf.div.MHplot$V2)
 vcf.div.MHplot$POS = as.numeric(vcf.div.MHplot$POS)
-
-
 names(vcf.div.MHplot)
 
 
@@ -111,28 +113,23 @@ vcf.div.MHplot %>%
 
 #################################################################################################
 
-library(tidyverse)
-library(vcfR)
-library(SNPfiltR)
-library(LEA) 
-
 setwd("~/Projects/eco_geno/population_genomics/") 
 
 vcf <- read.vcfR("outputs/vcf_final.filtered0.55.vcf.gz") 
 # first run through is the 0.8 cuttoff and the second runthrough is the 0.55 cutoff
 
-vcf.thin.55 <- distance_thin(vcf, min.distance=500) 
+vcf.thin <- distance_thin(vcf, min.distance=500) 
 
 meta <- read.csv("/gpfs1/cl/pbio3990/PopulationGenomics/metadata/meta4vcf.csv")
 dim(meta)
 meta2 <- meta[meta$id %in% colnames(vcf@gt[, -1]) , ]
 dim(meta2)
 
-write.vcf(vcf.thin.55, "outputs/vcf_final.filtered.thinned.55.vcf.gz")
+write.vcf(vcf.thin, "outputs/vcf_final.filtered.thinned.55.vcf.gz")
 
 system("gunzip -c ~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered.thinned.55.vcf.gz > ~/vcf_final.filtered.thinned.55.vcf")
 
-geno.55 <- vcf2geno(input.file = "/gpfs1/home/s/b/sbrusch/vcf_final.filtered.thinned.55.vcf", 
+geno <- vcf2geno(input.file = "/gpfs1/home/s/b/sbrusch/vcf_final.filtered.thinned.55.vcf", 
                  output.file = "outputs/vcf_final.filtered.thinned.55.geno")
 
 CentPCA <- LEA::pca("outputs/vcf_final.filtered.thinned.55.geno", scale=TRUE)
@@ -151,8 +148,11 @@ legend("bottomright",
 ggplot(as.data.frame(CentPCA$projections),
        aes(x=V1, y=V2, color=meta2$region, shape=meta2$continent)) +
   geom_point(alpha=0.5) +
-  labs(title="Centaurea genetic PCA",x="PC1 (2.2%)",y="PC2 (1.1%)",color="Region",shape="Continent") 
-#        xlim(-10,10) +
-#        ylim(-10,10)
+  labs(title="Centaurea genetic PCA",
+       x="PC1 (2.2%)",
+       y="PC2 (1.1%)",
+       color="Region",
+       shape="Continent") 
+
 
 ggsave("figures/CentPCA.55_PC1vPC2.pdf", width=6, height=6, units ="in")
