@@ -13,18 +13,11 @@ list.files()
 vcf <- read.vcfR("variants/Centaurea_filtered.vcf.gz") #accesses the centaurea file within the vairants file
 head(vcf)
 
-
-dna <- ape::read.dna("reference/GCA_030169165.1_ASM3016916v1_genomic.fa.gz", format = "fasta")
-gff <- read.table("reference/GCA_030169165.1_ASM3016916v1_genomic_genes.gff.gz", sep = "\t", quote = "")
-
-
 DP <- extract.gt(vcf, element="DP", as.numeric=T)
 DP[1:5, 1:10]
 quantile(DP)
 DP[DP==0] <- NA
 quantile(DP, na.rm=T)
-
-heatmap.bp(DP[1:1000,], rlabels = F, clabels = F) #this heatmap is for all the data
 
 library(SNPfiltR)
 
@@ -43,7 +36,7 @@ meta2$pop = as.factor(meta2$pop)
 vcf.filt.indMiss <- missing_by_sample(vcf.filt, 
                                       popmap = meta2, 
                                       cutoff = 0.55) 
-#this is where the change was made, cutoff will be either 0.8 or 0.55
+#this is where the change we are focusing on, cutoff will be either 0.8 or 0.55
 #whenever running program, change the labels depending on which filter you are using
 
 vcf.filt.indMiss <- filter_biallelic(vcf.filt.indMiss)
@@ -52,8 +45,6 @@ vcf.filt.indSNPMiss <- missing_by_snp(vcf.filt.indMiss, cutoff = 0.5)
 
 DP2 <- extract.gt(vcf.filt.indSNPMiss, element="DP", as.numeric=T)
 
-heatmap.bp(DP2[1:5000,], 
-           rlabels=F, clabels=F)
 
 write.vcf(vcf.filt.indSNPMiss,
           "~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered0.55.vcf.gz")
@@ -136,10 +127,6 @@ view(Hs_table_Zeros)
 write.csv(Hs_table_Zeros, "population_genomics/outputs/Hs_table_Zeros0.55.csv",
           quote=F,
           row.names = F)
-
-
-
-
 
 #################################################################################################
 
