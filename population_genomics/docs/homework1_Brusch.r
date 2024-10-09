@@ -89,6 +89,8 @@ vcf.div.MHplot$POS = as.numeric(vcf.div.MHplot$POS)
 names(vcf.div.MHplot)
 
 
+
+
 vcf.div.MHplot %>% 
   as_tibble()%>%
   pivot_longer(c(4:9)) %>%
@@ -100,14 +102,39 @@ ggsave("Histogram_Genome_Diverity_byRegion0.8.pdf",
        path="~/Projects/eco_geno/population_genomics/figures/")
 
 
-
-
 vcf.div.MHplot %>% 
   as_tibble()%>%
   pivot_longer(c(4:9)) %>%
   group_by(name) %>% 
   filter(value!=0 & value<0.25) %>% #take out all the SNPs with 0 values, != means does not equal
-  summarise(avgHs=mean(value), StdDev_Hs=sd(value), N_Hs=n()) 
+  summarise(avgHs=mean(value), StdDev_Hs=sd(value), N_Hs=n())
+
+setwd("~/Projects/eco_geno/")
+
+Hs_table_NonZeros <- vcf.div.MHplot %>% 
+  as_tibble() %>% 
+  pivot_longer(c(4:9)) %>%
+  group_by(name) %>%
+  filter(value!=0) %>% 
+  summarise(avg=mean(value), StdDev_Hs=sd(value), N_Hs=n())
+
+write.csv(Hs_table, "population_genomics/outputs/Hs_table_NonZeros.csv",
+          quote=F,
+          row.names = F)
+
+Hs_table_Zeros <- vcf.div.MHplot %>% 
+  as_tibble() %>% 
+  pivot_longer(c(4:9)) %>%
+  group_by(name) %>%
+  filter(value==0) %>% 
+  summarise(avg=mean(value), StdDev_Hs=sd(value), N_Hs=n())
+
+write.csv(Hs_table_Zeros, "population_genomics/outputs/Hs_table_Zeros.csv",
+          quote=F,
+          row.names = F)
+
+
+
 
 
 #################################################################################################
