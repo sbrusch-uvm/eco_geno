@@ -1,0 +1,17 @@
+# Transcriptomics Notebook
+
+## October 10, 2024
+
+-   we started the transcriptomics unit
+
+-   lots of great notes on the 01_DESeq2_explore file
+
+-   the countsTable has all the data in it that we will work with
+
+    -   we have to round that data since DESeq2 is wimpy
+
+-   we looked at the Column and Row data from the counts matrix
+
+-   made a barplot
+
+-   
