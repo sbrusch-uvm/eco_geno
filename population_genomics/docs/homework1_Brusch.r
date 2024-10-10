@@ -107,7 +107,7 @@ Hs_table_NonZeros <- vcf.div.MHplot %>%
   pivot_longer(c(4:9)) %>%
   group_by(name) %>%
   filter(value!=0) %>% 
-  summarise(avg=mean(value), StdDev_Hs=sd(value), N_Hs=n())
+  summarise(avg_Hs=mean(value), StdDev_Hs=sd(value), N_Hs=n())
 
 view(Hs_table_NonZeros)
 
@@ -120,7 +120,7 @@ Hs_table_Zeros <- vcf.div.MHplot %>%
   pivot_longer(c(4:9)) %>%
   group_by(name) %>%
   filter(value==0) %>% 
-  summarise(avg=mean(value), StdDev_Hs=sd(value), N_Hs=n())
+  summarise(avg_Hs=mean(value), StdDev_Hs=sd(value), N_Hs=n())
 
 view(Hs_table_Zeros)
 
