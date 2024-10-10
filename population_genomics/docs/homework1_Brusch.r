@@ -73,16 +73,16 @@ str(vcf.div)
 chr.main <- unique(vcf.div$CHROM)[1:8]
 chrnum <- as.data.frame(cbind(chr.main, seq(1, 8, 1)))
 
-vcf.div.MHplot <- left_join(chrnum, vcf.div, join_by(chr.main==CHROM))
-vcf.div.MHplot <- vcf.div.MHplot %>% filter(Gst>0) %>% mutate(SNP=paste0(chr.main, "_", POS))
-vcf.div.MHplot$V2 = as.numeric(vcf.div.MHplot$V2)
-vcf.div.MHplot$POS = as.numeric(vcf.div.MHplot$POS)
-names(vcf.div.MHplot)
+vcf.div.data <- left_join(chrnum, vcf.div, join_by(chr.main==CHROM))
+vcf.div.data <- vcf.div.data %>% filter(Gst>0) %>% mutate(SNP=paste0(chr.main, "_", POS))
+vcf.div.data$V2 = as.numeric(vcf.div.data$V2)
+vcf.div.data$POS = as.numeric(vcf.div.data$POS)
+names(vcf.div.data)
 
 
 
 
-vcf.div.MHplot %>% 
+vcf.div.data %>% 
   as_tibble()%>%
   pivot_longer(c(4:9)) %>%
   ggplot(aes(x=value, fill=name)) + 
@@ -93,7 +93,7 @@ ggsave("Histogram_Genome_Diverity_byRegion0.55.pdf",
        path="~/Projects/eco_geno/population_genomics/figures/")
 
 
-vcf.div.MHplot %>% 
+vcf.div.data %>% 
   as_tibble()%>%
   pivot_longer(c(4:9)) %>%
   group_by(name) %>% 
@@ -102,7 +102,7 @@ vcf.div.MHplot %>%
 
 setwd("~/Projects/eco_geno/")
 
-Hs_table_NonZeros <- vcf.div.MHplot %>% 
+Hs_table_NonZeros <- vcf.div.data %>% 
   as_tibble() %>% 
   pivot_longer(c(4:9)) %>%
   group_by(name) %>%
@@ -115,7 +115,7 @@ write.csv(Hs_table_NonZeros, "population_genomics/outputs/Hs_table_NonZeros0.55.
           quote=F,
           row.names = F)
 
-Hs_table_Zeros <- vcf.div.MHplot %>% 
+Hs_table_Zeros <- vcf.div.data %>% 
   as_tibble() %>% 
   pivot_longer(c(4:9)) %>%
   group_by(name) %>%
