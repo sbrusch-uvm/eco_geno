@@ -13,11 +13,18 @@ list.files()
 vcf <- read.vcfR("variants/Centaurea_filtered.vcf.gz") #accesses the centaurea file within the vairants file
 head(vcf)
 
+
+dna <- ape::read.dna("reference/GCA_030169165.1_ASM3016916v1_genomic.fa.gz", format = "fasta")
+gff <- read.table("reference/GCA_030169165.1_ASM3016916v1_genomic_genes.gff.gz", sep = "\t", quote = "")
+
+
 DP <- extract.gt(vcf, element="DP", as.numeric=T)
 DP[1:5, 1:10]
 quantile(DP)
 DP[DP==0] <- NA
 quantile(DP, na.rm=T)
+
+heatmap.bp(DP[1:1000,], rlabels = F, clabels = F) #this heatmap is for all the data
 
 library(SNPfiltR)
 
@@ -35,8 +42,8 @@ meta2$pop = as.factor(meta2$pop)
 
 vcf.filt.indMiss <- missing_by_sample(vcf.filt, 
                                       popmap = meta2, 
-                                      cutoff = 0.55) 
-#this is where the change we are focusing on, cutoff will be either 0.8 or 0.55
+                                      cutoff = 0.8) 
+#this is where the change was made, cutoff will be either 0.8 or 0.55
 #whenever running program, change the labels depending on which filter you are using
 
 vcf.filt.indMiss <- filter_biallelic(vcf.filt.indMiss)
@@ -45,9 +52,11 @@ vcf.filt.indSNPMiss <- missing_by_snp(vcf.filt.indMiss, cutoff = 0.5)
 
 DP2 <- extract.gt(vcf.filt.indSNPMiss, element="DP", as.numeric=T)
 
+heatmap.bp(DP2[1:5000,], 
+           rlabels=F, clabels=F)
 
 write.vcf(vcf.filt.indSNPMiss,
-          "~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered0.55.vcf.gz")
+          "~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered0.8.vcf.gz")
 # for second filtering save, I changed the name to vcf_final_filtered0.55.vcf.gz after rerunning the program
 
 #########################################################################
@@ -57,7 +66,7 @@ library(qqman)
 
 options(bitmapType = "cairo")
 
-vcf <- read.vcfR("~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered0.55.vcf.gz")
+vcf <- read.vcfR("~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered0.8.vcf.gz")
 #first time with file vcf_final.filtered0.8.vcf.gz then with .filtered0.55.vcf.gz
 
 
@@ -73,27 +82,27 @@ str(vcf.div)
 chr.main <- unique(vcf.div$CHROM)[1:8]
 chrnum <- as.data.frame(cbind(chr.main, seq(1, 8, 1)))
 
-vcf.div.data <- left_join(chrnum, vcf.div, join_by(chr.main==CHROM))
-vcf.div.data <- vcf.div.data %>% filter(Gst>0) %>% mutate(SNP=paste0(chr.main, "_", POS))
-vcf.div.data$V2 = as.numeric(vcf.div.data$V2)
-vcf.div.data$POS = as.numeric(vcf.div.data$POS)
-names(vcf.div.data)
+vcf.div.MHplot <- left_join(chrnum, vcf.div, join_by(chr.main==CHROM))
+vcf.div.MHplot <- vcf.div.MHplot %>% filter(Gst>0) %>% mutate(SNP=paste0(chr.main, "_", POS))
+vcf.div.MHplot$V2 = as.numeric(vcf.div.MHplot$V2)
+vcf.div.MHplot$POS = as.numeric(vcf.div.MHplot$POS)
+names(vcf.div.MHplot)
 
 
 
 
-vcf.div.data %>% 
+vcf.div.MHplot %>% 
   as_tibble()%>%
   pivot_longer(c(4:9)) %>%
   ggplot(aes(x=value, fill=name)) + 
   geom_histogram(position = "identity", alpha=0.5, bins=50) +
   labs(title = "Genome-wide expected heterozygosity (Hs)", fill="Regions", 
        x="Gene diversity within Regions", y="Counts of SNPs")
-ggsave("Histogram_Genome_Diverity_byRegion0.55.pdf", 
+ggsave("Histogram_Genome_Diverity_byRegion0.8.pdf", 
        path="~/Projects/eco_geno/population_genomics/figures/")
 
 
-vcf.div.data %>% 
+vcf.div.MHplot %>% 
   as_tibble()%>%
   pivot_longer(c(4:9)) %>%
   group_by(name) %>% 
@@ -102,38 +111,38 @@ vcf.div.data %>%
 
 setwd("~/Projects/eco_geno/")
 
-Hs_table_NonZeros <- vcf.div.data %>% 
+Hs_table_NonZeros <- vcf.div.MHplot %>% 
   as_tibble() %>% 
   pivot_longer(c(4:9)) %>%
   group_by(name) %>%
   filter(value!=0) %>% 
-  summarise(avg_Hs=mean(value), StdDev_Hs=sd(value), N_Hs=n())
+  summarise(avg=mean(value), StdDev_Hs=sd(value), N_Hs=n())
 
-view(Hs_table_NonZeros)
-
-write.csv(Hs_table_NonZeros, "population_genomics/outputs/Hs_table_NonZeros0.55.csv",
+write.csv(Hs_table, "population_genomics/outputs/Hs_table_NonZeros.csv",
           quote=F,
           row.names = F)
 
-Hs_table_Zeros <- vcf.div.data %>% 
+Hs_table_Zeros <- vcf.div.MHplot %>% 
   as_tibble() %>% 
   pivot_longer(c(4:9)) %>%
   group_by(name) %>%
   filter(value==0) %>% 
-  summarise(avg_Hs=mean(value), StdDev_Hs=sd(value), N_Hs=n())
+  summarise(avg=mean(value), StdDev_Hs=sd(value), N_Hs=n())
 
-view(Hs_table_Zeros)
-
-write.csv(Hs_table_Zeros, "population_genomics/outputs/Hs_table_Zeros0.55.csv",
+write.csv(Hs_table_Zeros, "population_genomics/outputs/Hs_table_Zeros.csv",
           quote=F,
           row.names = F)
+
+
+
+
 
 #################################################################################################
 
 library(LEA) 
 setwd("~/Projects/eco_geno/population_genomics/") 
 
-vcf <- read.vcfR("outputs/vcf_final.filtered0.55.vcf.gz") 
+vcf <- read.vcfR("outputs/vcf_final.filtered0.8.vcf.gz") 
 # first run through is the 0.8 cuttoff and the second runthrough is the 0.55 cutoff
 
 vcf.thin <- distance_thin(vcf, min.distance=500) 
@@ -143,17 +152,17 @@ dim(meta)
 meta2 <- meta[meta$id %in% colnames(vcf@gt[, -1]) , ]
 dim(meta2)
 
-write.vcf(vcf.thin, "outputs/vcf_final.filtered.thinned.55.vcf.gz")
+write.vcf(vcf.thin, "outputs/vcf_final.filtered.thinned.8.vcf.gz")
 
-system("gunzip -c ~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered.thinned.55.vcf.gz > ~/vcf_final.filtered.thinned.55.vcf")
+system("gunzip -c ~/Projects/eco_geno/population_genomics/outputs/vcf_final.filtered.thinned.8.vcf.gz > ~/vcf_final.filtered.thinned.8.vcf")
 
-geno <- vcf2geno(input.file = "/gpfs1/home/s/b/sbrusch/vcf_final.filtered.thinned.55.vcf", 
-                 output.file = "outputs/vcf_final.filtered.thinned.55.geno")
+geno <- vcf2geno(input.file = "/gpfs1/home/s/b/sbrusch/vcf_final.filtered.thinned.8.vcf", 
+                 output.file = "outputs/vcf_final.filtered.thinned.8.geno")
 
-CentPCA <- LEA::pca("outputs/vcf_final.filtered.thinned.55.geno", scale=TRUE)
+CentPCA <- LEA::pca("outputs/vcf_final.filtered.thinned.8.geno", scale=TRUE)
 
 # if you have run the PCA before, you can just open it here without having to do the previous steps
-CentPCA <- load.pcaProject("vcf_final.filtered.thinned.55.pcaProject")
+CentPCA <- load.pcaProject("vcf_final.filtered.thinned.8.pcaProject")
 
 show(CentPCA)
 plot(CentPCA)
@@ -169,4 +178,4 @@ ggplot(as.data.frame(CentPCA$projections),
        shape="Continent") 
 
 
-ggsave("figures/CentPCA.55_PC1vPC2.pdf", width=6, height=6, units ="in")
+ggsave("figures/CentPCA.8_PC1vPC2.pdf", width=6, height=6, units ="in")
