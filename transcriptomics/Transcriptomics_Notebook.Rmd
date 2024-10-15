@@ -15,3 +15,25 @@
 -   made a barplot
 
 -   
+
+## October 15, 2024
+
+-   we ran the 01_DESeq2_explore code to load in our data
+
+-   chose to compare between the 2 developmental temperatures 22 and 18
+
+    -   we are comparing 22 to 18 (important to understand what is being compared to what)
+
+-   pulled all the results for D22 vs D18
+
+-   we looked at the counts per sample for a specific gene as an example
+
+-   made plots to visualize the table data, should correlate
+
+-   made MA plots which are log fold change vs average gene expression
+
+    -   a visual of over dispersion
+
+-   converted the data into a data frame so that we can plot, made a new column for significance
+
+-   
