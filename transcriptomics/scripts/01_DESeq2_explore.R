@@ -3,7 +3,7 @@
 
 BiocManager::install("DESeq2", dependencies=TRUE, force = TRUE)
 
-library(DESeq2) #not working
+library(DESeq2) 
 library(ggplot2)
 options(bitmapType = "cairo")
 
@@ -52,9 +52,9 @@ rowSums(countsTableRound)
 # this transcriptome wasn't made for this experiment which explains all the 0s
 mean(rowSums(countsTableRound)) # 3244.739 reads per transcript
 median(rowSums(countsTableRound)) # 64 , there are a lot of genes with very high expression and very very low expression
-# evidence of over dispersion that median is very different from the mean
+# evidence of over dispersion -> median is very different from the mean
 
-apply(countsTableRound, 2, mean) #2 is for columns, counts/reads at particular gene 
+apply(countsTableRound, 2, mean) # 2 is for columns, counts/reads at particular gene 
 # one of the first steps DESeq does, gets a sense 
 # gives a sense of variation in sequencing effort across samples 
 
@@ -75,8 +75,8 @@ dim(dds) #dimension of dds
 
 dds <- dds[rowSums(counts(dds) >= 10) >= 15, ] #filtering the transcripts by doing the rowSums and if you sum across
 # if there aren't more than 10 reads in that for at least 15 samples, they we don't want to pay attention to that
-# thats 15/21 (75%) samples in that scenario, if there was a gene only majorily expressed in 1 treatment, filter out
-# the 000 10000 12000 9000 in physical notebook
+# thats 15/21 (75%) samples in that scenario, if there was a gene only majorly expressed in 1 treatment, filter out
+# the 0 0 0 10000 12000 9000 in physical notebook (10/10 page)
 
 nrow(dds) # went down to 35,527 transcripts from the original 119million in the countsTable thingy
 # = number of transcripts with more than 10 reads in more than or equal to 15 samples
@@ -84,7 +84,7 @@ nrow(dds) # went down to 35,527 transcripts from the original 119million in the 
 # Run the DESeq model to test for global differential gene expression 
 dds <- DESeq(dds) #all the differential gene expression data now exists
 
-#list the results you've generated with the funtion
+#list the results you've generated with the function
 resultsNames(dds) # Intercept, DevTemp D22 vs D18, FinalTemp A33 vs A28, FinalTemp BASE vs A28
 #those are our results
 #now we can look into them
