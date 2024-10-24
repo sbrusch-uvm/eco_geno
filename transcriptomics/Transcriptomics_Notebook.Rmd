@@ -37,3 +37,17 @@
 -   converted the data into a data frame so that we can plot, made a new column for significance
 
 -   
+
+## October 24, 2024
+
+-   we worked with WGNCA
+
+-   imported our counts data
+
+-   loaded in our trait data
+
+-   used goodSampleGenes to see how many of the total genes were good quality, looked like all
+
+    -   deeper dive using gsg\$goodGenes showed that not all were good
+
+    -   
