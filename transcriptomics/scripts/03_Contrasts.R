@@ -209,3 +209,6 @@ combined_scatter_plot <- grid.arrange(plot28, plot33, ncol=2)
 
 ggsave("~/Projects/eco_geno/transcriptomics/figures/combined_scatter_plot.png", 
        combined_scatter_plot, width = 12, height = 6)
+
+
+

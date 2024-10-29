@@ -83,4 +83,4 @@ pheatmap(mat, annotation_col=df, show_rownames=FALSE, cluster_cols=T, cluster_ro
 # we started by looking at the result names
 # we chose to compare dev temps
 # could choose to compare other things
-        
+      
