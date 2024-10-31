@@ -103,7 +103,7 @@ a1 <- ggplot(sft.data, aes(Power, SFT.R.sq, label = Power))+
   labs(x="Power", y="Scale free topology model fit, signed R^2")+
   theme_classic()
 
-
+a1
 
 a2 <- ggplot(sft.data, aes(Power, mean.k., label = Power))+
   geom_point()+
@@ -111,6 +111,7 @@ a2 <- ggplot(sft.data, aes(Power, mean.k., label = Power))+
   geom_hline(yintercept = 0.8, color = "red")+
   labs(x="Power", y="Mean Connectivity")+
   theme_classic()
+a2
 
 grid.arrange(a1, a2, nrow = 2)
 
@@ -156,7 +157,7 @@ head(module_eigengenes)
 dim(module_eigengenes)
 
 # Get the number of genes for each module using table funciton
-table(bwnet$26$colors)
+table(bwnet26$colors)
 
 # Plot the dendrogram and the module colors 
 # merge and unmerged, merged based on similarity cutoff (0.25 which we set earlier)
@@ -196,7 +197,6 @@ CorLevelPlot(heatmap.data,
              x = names(heatmap.data)[46:48], # these values may need to change based on number of eigengenes
              y = names(heatmap.data)[1:45],
              col = c("midnightblue", "deepskyblue", "white", "rosybrown1", "firebrick"))
-
 
 
 

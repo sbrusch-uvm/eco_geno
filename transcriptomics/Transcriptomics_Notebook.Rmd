@@ -38,16 +38,8 @@
 
 -   
 
-## October 24, 2024
+## October 17, 2024
 
--   we worked with WGNCA
+-   remember that everything is a comparison, what is being compared to what
 
--   imported our counts data
-
--   loaded in our trait data
-
--   used goodSampleGenes to see how many of the total genes were good quality, looked like all
-
-    -   deeper dive using gsg\$goodGenes showed that not all were good
-
-    -   
+-   looked at contrasts between the developmental temps and their final temps
