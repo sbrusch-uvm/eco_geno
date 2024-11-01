@@ -3,38 +3,26 @@ BiocManager::install("DESeq2", dependencies=TRUE, force = TRUE)
 library(DESeq2) #differential gene expression analysis
 library(ggplot2) # lets us make plots
 options(bitmapType = "cairo") # helps make plots
-
 setwd("~/Projects/eco_geno/transcriptomics/") # where the data is located
 
-
 #Import counts matrix
-
 countsTable <- read.table("/gpfs1/cl/pbio3990/Transcriptomics/tonsa_counts.txt",
                           header = TRUE, row.names = 1)
-# 21 samples, N new jersey, 1 = 18C, 2= 22C, C=control, sbefore = resequenced
+# 21 samples, N new jersey, 1 = 18C, 2= 22C, C=control, s infront = resequenced
 dim(countsTable)
 
-countsTableRound <- round(countsTable)
-#DESeq2 doesn't like decimals so we are rounding all the values in the matrix
+countsTableRound <- round(countsTable) # DESeq2 prefers whole numbers
 
-
-conds <- read.delim("/gpfs1/cl/pbio3990/Transcriptomics/experimental_details.txt",
-                    header = TRUE, stringsAsFactors = TRUE, row.names = 1)
-#the conditions
-
+conds <- read.delim("/gpfs1/cl/pbio3990/Transcriptomics/experimental_details.txt", 
+                    header = TRUE, stringsAsFactors = TRUE, row.names = 1) #the conditions
 conds #sees all the data 21 samples, assigned developmental temp and final temp, 
 ## 2 levels Dev 18 and 22
 ## 3 levels Final Base, A28, A33
-##################################################
-# 
-# Explore counts matrix 
-# 
-##################################################
-# let's see how many reads we have from each sample do that with colSums (a base R funciton)
 
-colSums(countsTableRound) #that is summing up all the columns, look at notebook 10/10 page
+# Explore Counts Matrix #
+colSums(countsTableRound) #that is summing up all the columns
 mean(colSums(countsTableRound)) #this gives the mean of those columns 
-# what you typically want in an RNA seq study 20million reads, after filtering reads, 18mil reads is excellent
+# after filtering reads, 18mil reads is excellent
 
 # the average number of counts per gene
 rowSums(countsTableRound)
@@ -47,11 +35,7 @@ apply(countsTableRound, 2, mean) # 2 is for columns, counts/reads at particular 
 # one of the first steps DESeq does, gets a sense 
 # gives a sense of variation in sequencing effort across samples 
 
-#############################################################
-#
-# Start analysis in DESeq2
-#
-#############################################################
+# Analysis Using DESeq2
 
 dds <- DESeqDataSetFromMatrix(countData= countsTableRound, colData = conds,
                               design = ~ DevTemp + FinalTemp)
@@ -62,40 +46,13 @@ dim(dds) #dimension of dds
 # now filtering
 #average number of transcripts per number of reads
 
-dds <- dds[rowSums(counts(dds) >= 10) >= 15, ] #filtering the transcripts by doing the rowSums and if you sum across
-# if there aren't more than 10 reads in that for at least 15 samples, they we don't want to pay attention to that
-# thats 15/21 (75%) samples in that scenario, if there was a gene only majorly expressed in 1 treatment, filter out
-# the 0 0 0 10000 12000 9000 in physical notebook (10/10 page)
-
-nrow(dds) # went down to 35,527 transcripts from the original 119million in the countsTable thingy
+dds <- dds[rowSums(counts(dds) >= 10) >= 15, ] #filtering the transcripts 
+nrow(dds) # went down to 35,527 transcripts from the original 119million in the countsTable
 # = number of transcripts with more than 10 reads in more than or equal to 15 samples
 
 # Run the DESeq model to test for global differential gene expression 
 dds <- DESeq(dds) #all the differential gene expression data now exists
-
-#list the results you've generated with the function
 resultsNames(dds) # Intercept, DevTemp_D22_vs_D18, FinalTemp_A33_vs_A28, FinalTemp_BASE_vs_A28
-
-# pull out the results for developmental temp 22 vs 18
-res_D22vsD18 <- results(dds, name = "DevTemp_D22_vs_D18", alpha = 0.05)
-
-#find which ones within that grouping are the most significant
-# order by significance 
-
-res_D22vsD18 <- res_D22vsD18[order(res_D22vsD18$padj),]
-head(res_D22vsD18) #gives the most sig dif in expression at samples at 18 vs 22
-# always a comparison between 2 categories in this case = 22 vs 18 
-# whats the gene expression in 22 relative to 18 
-# the log2Fold Change, the larger the more sig
-# really check the direction of comparison
-
-
-######## MA plot = logfoldchange vs average gene expression
-plotMA(res_D22vsD18, ylim=c(-4,4)) 
-# x axis is the counts, y axis is log fold change, 0 is same in both samples
-# we see a lot of upregulation at 22 in comparison to 18, showing mounted gene expression
-# genes that are super highly expressed are far to the right ex. metabolism, replicating, DNA repair
-# visual of over dispersion mean =! variance  
 
 
 library(eulerr)
@@ -105,14 +62,9 @@ dds$group <- factor(paste0(dds$DevTemp, dds$FinalTemp))
 design(dds) <- ~ group # groups by the above factors, new factor called group w/ all the new possible levels
 dds <- DESeq(dds)
 dim(dds) # 35527    21
-resultsNames(dds) # "Intercept"  "group_D18A33_vs_D18A28"  "group_D18BASE_vs_D18A28"
-# "group_D22A28_vs_D18A28"  "group_D22A33_vs_D18A28"  "group_D22BASE_vs_D18A28"
+resultsNames(dds) 
 
-#now make separate files for each contrast, so that we have 1 object in our environment
-# allows us to compare what is being contrasted in one group or the other group
-
-
-# 1. compare baseline gene expression between developmental treatment groups
+# 1. Compare baseline gene expression D18 between treatment groups A28 and A33
 res_D18_BASE_D18_A28 <- results(dds, contrast = c("group", "D18BASE", "D18A28"), alpha = 0.05)
 res_D18_BASE_D18_A28 <-  res_D18_BASE_D18_A28[!is.na(res_D18_BASE_D18_A28$padj),]
 res_D18_BASE_D18_A28 <- res_D18_BASE_D18_A28[order(res_D18_BASE_D18_A28$padj),]
@@ -177,7 +129,6 @@ length(degs_D22_BASE_D22_A33) # 1564 DEGs between D22BASE and D22A33
 #look at the overlaps in which genes are differentially expressed in multiple contrasts
 
 length(intersect(degs_D18_BASE_D18_A28, degs_D18_BASE_D18_A33)) # 34 D18
-
 length(intersect(degs_D22_BASE_D22_A28, degs_D22_BASE_D22_A33)) # 144 D22
 
 
@@ -195,7 +146,7 @@ plot(myEuler18, lty=1:2, quantities=TRUE, fill=c("wheat", "indianred3", "lightco
 
 myEuler22 <- euler(c("D22A28"=145, "D22A33"=1420, "D22A28&D22A33"=144))
 
-plot(myEuler22, lty=1:2, quantities=TRUE, fill=c("deepskyblue", "mediumseagreen", "mediumturquoise"))
+plot(myEuler22, lty=1:2, quantities=TRUE, fill=c("lightblue", "darkseagreen", "aquamarine3"))
 
 
 ########################################################
@@ -225,8 +176,8 @@ res_df18 <- res_df18 %>%
   mutate(fill=case_when(
     padj.28 < 0.05 & stat.28 < 0 ~ "lightblue",
     padj.28 < 0.05 & stat.28 > 0 ~ "lightpink",
-    padj.33 < 0.05 & stat.33 < 0 ~ "darkblue",
-    padj.33 < 0.05 & stat.33 > 0 ~ "magenta4"
+    padj.33 < 0.05 & stat.33 < 0 ~ "dodgerblue4",
+    padj.33 < 0.05 & stat.33 > 0 ~ "deeppink4"
   ))
 
 #count the number of points per fill color
@@ -238,7 +189,7 @@ color_counts <- res_df18 %>%
   
 
 label_positions <- data.frame(
-  fill=c("darkblue", "lightpink", "magenta4", "lightblue"),
+  fill=c("dodgerblue4", "lightpink", "deeppink4", "lightblue"),
   x_pos=c(1,5,0,-7.5),
   y_pos=c(-5,0,9,3)
 )
@@ -281,8 +232,8 @@ res_df22 <- res_df22 %>%
   mutate(fill=case_when(
     padj.28 < 0.05 & stat.28 < 0 ~ "lightblue",
     padj.28 < 0.05 & stat.28 > 0 ~ "lightpink",
-    padj.33 < 0.05 & stat.33 < 0 ~ "darkblue",
-    padj.33 < 0.05 & stat.33 > 0 ~ "magenta4"
+    padj.33 < 0.05 & stat.33 < 0 ~ "dodgerblue4",
+    padj.33 < 0.05 & stat.33 > 0 ~ "deeppink4"
   ))
 
 #count the number of points per fill color
@@ -291,7 +242,7 @@ color_counts22 <- res_df22 %>%
   summarise(count = n())
 
 label_positions22 <- data.frame(
-  fill=c("darkblue", "lightpink", "magenta4", "lightblue"),
+  fill=c("dodgerblue4", "lightpink", "deeppink4", "lightblue"),
   x_pos=c(1,5,0,-7.5),
   y_pos=c(-5,0,9,3)
 )
