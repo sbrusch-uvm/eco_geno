@@ -1,13 +1,13 @@
 BiocManager::install("DESeq2", dependencies=TRUE, force = TRUE)
 
-library(DESeq2) 
-library(ggplot2)
-options(bitmapType = "cairo")
+library(DESeq2) #differential gene expression analysis
+library(ggplot2) # lets us make plots
+options(bitmapType = "cairo") # helps make plots
 
-setwd("~/Projects/eco_geno/transcriptomics/")
+setwd("~/Projects/eco_geno/transcriptomics/") # where the data is located
 
 
-#Import counts matrix 
+#Import counts matrix
 
 countsTable <- read.table("/gpfs1/cl/pbio3990/Transcriptomics/tonsa_counts.txt",
                           header = TRUE, row.names = 1)
@@ -16,14 +16,12 @@ dim(countsTable)
 
 countsTableRound <- round(countsTable)
 #DESeq2 doesn't like decimals so we are rounding all the values in the matrix
-tail(countsTableRound)
-# TRINITY_DN219251 shows the number of counts mapped to gene 
 
 
 conds <- read.delim("/gpfs1/cl/pbio3990/Transcriptomics/experimental_details.txt",
                     header = TRUE, stringsAsFactors = TRUE, row.names = 1)
 #the conditions
-head(conds) #heads the data
+
 conds #sees all the data 21 samples, assigned developmental temp and final temp, 
 ## 2 levels Dev 18 and 22
 ## 3 levels Final Base, A28, A33
@@ -78,15 +76,6 @@ dds <- DESeq(dds) #all the differential gene expression data now exists
 #list the results you've generated with the function
 resultsNames(dds) # Intercept, DevTemp_D22_vs_D18, FinalTemp_A33_vs_A28, FinalTemp_BASE_vs_A28
 
-
-#those are our results
-#now we can look into them
-# visualize our global gene expression patterns using PCA
-# first we need to transform the data for plotting using variance stabilization 
-
-library(pheatmap) # will be making heat maps of gene expression data and how it varies across the samples
-resultsNames(dds) # Intercept, DevTemp D22 vs D18, FinalTemp A33 vs A28, FinalTemp BASE vs A28
-
 # pull out the results for developmental temp 22 vs 18
 res_D22vsD18 <- results(dds, name = "DevTemp_D22_vs_D18", alpha = 0.05)
 
@@ -101,9 +90,6 @@ head(res_D22vsD18) #gives the most sig dif in expression at samples at 18 vs 22
 # really check the direction of comparison
 
 
-
-
-
 ######## MA plot = logfoldchange vs average gene expression
 plotMA(res_D22vsD18, ylim=c(-4,4)) 
 # x axis is the counts, y axis is log fold change, 0 is same in both samples
@@ -111,26 +97,6 @@ plotMA(res_D22vsD18, ylim=c(-4,4))
 # genes that are super highly expressed are far to the right ex. metabolism, replicating, DNA repair
 # visual of over dispersion mean =! variance  
 
-
-
-# heatmap is another way to look at change across samples and genes
-vsd <- vst(dds, blind = FALSE)
-
-topgenes <- head(rownames(res_D22vsD18), 20)
-# there is way to much info to look at it all so we're gonna look at the top most sig. genes
-mat <- assay(vsd)[topgenes, ]
-df <- as.data.frame(colData(dds)[,c("DevTemp", "FinalTemp")])
-pheatmap(mat, annotation_col=df, show_rownames=FALSE, cluster_cols=T, cluster_rows=T)
-# columns = samples
-# rows = genes
-# color refers to expression amount, red band in middle shows high expression of genes across the samples
-# some genes show contrast across our samples 
-# blue block in middle corresponding with samples from D18, D22 samples have higher expression 
-
-
-# we started by looking at the result names
-# we chose to compare dev temps
-# could choose to compare other things
 
 library(eulerr)
 #start by making groups within DESeq object
@@ -141,7 +107,6 @@ dds <- DESeq(dds)
 dim(dds) # 35527    21
 resultsNames(dds) # "Intercept"  "group_D18A33_vs_D18A28"  "group_D18BASE_vs_D18A28"
 # "group_D22A28_vs_D18A28"  "group_D22A33_vs_D18A28"  "group_D22BASE_vs_D18A28"
-
 
 #now make separate files for each contrast, so that we have 1 object in our environment
 # allows us to compare what is being contrasted in one group or the other group
@@ -173,41 +138,65 @@ degs_D18_BASE_D18_A33 <- row.names(res_D18_BASE_D18_A33[res_D18_BASE_D18_A33$pad
 
 plotMA(res_D18_BASE_D18_A33, ylim=c(-4,4))
 
+# 3. compare baseline gene expression between developmental treatment groups
+res_D22_BASE_D22_A28 <- results(dds, contrast = c("group", "D22BASE", "D22A28"), alpha = 0.05)
+res_D22_BASE_D22_A28 <-  res_D22_BASE_D22_A28[!is.na(res_D22_BASE_D22_A28$padj),]
+res_D22_BASE_D22_A28 <- res_D22_BASE_D22_A28[order(res_D22_BASE_D22_A28$padj),]
+head(res_D22_BASE_D22_A28)
+summary(res_D22_BASE_D22_A28) # 274 genes upregulated, 15 downregulated genes
 
+# make a list of which genes in our comparisons of interest are differential expressed (list of DEGs)
+degs_D22_BASE_D22_A28 <- row.names(res_D22_BASE_D22_A28[res_D22_BASE_D22_A28$padj < 0.05,])
+
+
+plotMA(res_D22_BASE_D22_A28, ylim=c(-4,4))
+
+# 4. compare baseline gene expression between developmental treatment groups
+res_D22_BASE_D22_A33 <- results(dds, contrast = c("group", "D22BASE", "D22A33"), alpha = 0.05)
+res_D22_BASE_D22_A33 <-  res_D22_BASE_D22_A33[!is.na(res_D22_BASE_D22_A33$padj),]
+res_D22_BASE_D22_A33 <- res_D22_BASE_D22_A33[order(res_D22_BASE_D22_A33$padj),]
+head(res_D22_BASE_D22_A33)
+summary(res_D22_BASE_D22_A33) # 1176 genes upregulated, 388 downregulated genes
+
+# make a list of which genes in our comparisons of interest are differential expressed (list of DEGs)
+degs_D22_BASE_D22_A33 <- row.names(res_D22_BASE_D22_A33[res_D22_BASE_D22_A33$padj < 0.05,])
+
+
+plotMA(res_D22_BASE_D22_A33, ylim=c(-4,4))
 
 #############################
 
-length(degs_D18_BASE_D18_A28) # 41 differentially expressed genes between D18BASE and D22BASE
-length(degs_D18_BASE_D18_A33) # 332 DEGs between D18A28 and D22A28
+length(degs_D18_BASE_D18_A28) # 41 differentially expressed genes between D18BASE and D18A28
+length(degs_D18_BASE_D18_A33) # 332 DEGs between D18BASE and D18A33
+length(degs_D22_BASE_D22_A28) # 289 DEGs between D22BASE and D22A28
+length(degs_D22_BASE_D22_A33) # 1564 DEGs between D22BASE and D22A33
 
-# the higher the acute temperature exposure, the lower differentiated genes 
 
 #############################
 # we know overall number of genes, now we will figure out the overlap between 
 #look at the overlaps in which genes are differentially expressed in multiple contrasts
 
-length(intersect(degs_D18_BASE_D22_BASE, degs_D18_A28_D22_A28)) # 107
-length(intersect(degs_D18_BASE_D22_BASE, degs_D18_A33_D22_A33)) # 44
-length(intersect(degs_D18_A28_D22_A28, degs_D18_A33_D22_A33)) # 29
-length(intersect(degs_D18_BASE_D22_BASE, 
-                 intersect(degs_D18_A28_D22_A28, degs_D18_A33_D22_A33))) # 23
+length(intersect(degs_D18_BASE_D18_A28, degs_D18_BASE_D18_A33)) # 34 D18
+
+length(intersect(degs_D22_BASE_D22_A28, degs_D22_BASE_D22_A33)) # 144 D22
 
 
-##### Pickup 10/22/24
 # calculate the number of unique genes in each portion of the Euler plot
-1935-107-44+23 # 1807 genes diff expressed uniquely at Baseline between 18vs22
-296-107-29+23 # 183 genes diff expressed when exposed to 28
-78-44-29+23 # 28 genes diff expressed when exposed to 33
+41-34 # 7 genes uniq genes at 18BASE18A28
+332-34 # 298 uniq genes at 18BASE18A33
 
-107-23 # 84 genes unique to BASE and A28
-44-23 # 21 genes unique to BASE and A33
-29-23 # 6 genes unique to A28 and A33
+myEuler18 <- euler(c("D18A28"=7, "D18A33"=298, "D18A28&D18A33"=34))
 
 
-myEuler <- euler(c("BASE"=1807, "A28"=183, "A33"=28, 
-                   "BASE&A28"=84, "BASE&A33"=21, "A28&A33"=6,
-                   "BASE&A28&A33"=23))
-plot(myEuler, lty=1:2, quantities=TRUE, fill=c("red", "blue", "white"))
+plot(myEuler18, lty=1:2, quantities=TRUE, fill=c("wheat", "indianred3", "lightcoral"))
+
+289-144 # 145 uniq genes at 22BASE22A28
+1564-144 # 1420
+
+myEuler22 <- euler(c("D22A28"=145, "D22A33"=1420, "D22A28&D22A33"=144))
+
+plot(myEuler22, lty=1:2, quantities=TRUE, fill=c("deepskyblue", "mediumseagreen", "mediumturquoise"))
+
 
 ########################################################
 #Make a scatter plot of responses to A28 when copepods develop at 18vs22
@@ -217,14 +206,14 @@ plot(myEuler, lty=1:2, quantities=TRUE, fill=c("red", "blue", "white"))
 res_D18_BASEvsA28 <- as.data.frame(results(dds, contrast=c("group", "D18BASE", "D18A28"), 
                                            alpha = 0.05))
 # contrast D22_BASEvsA28
-res_D22_BASEvsA28 <- as.data.frame(results(dds, contrast=c("group", "D22BASE", "D22A28"), 
+res_D18_BASEvsA33 <- as.data.frame(results(dds, contrast=c("group", "D18BASE", "D18A33"), 
                                            alpha = 0.05))
 
 # merge dataframes 
-res_df28 <- merge(res_D18_BASEvsA28, res_D22_BASEvsA28, by="row.names",
-                  suffixes=c(".18", ".22"))
-rownames(res_df28) <- res_df28$Row.names
-res_df28 <- res_df28[,-1]
+res_df18 <- merge(res_D18_BASEvsA28, res_D18_BASEvsA33, by="row.names",
+                  suffixes=c(".28", ".33"))
+rownames(res_df18) <- res_df18$Row.names
+res_df18 <- res_df18[,-1]
 
 
 library(dplyr)
@@ -232,16 +221,16 @@ library(tidyr)
 # color based on values in our data frame
 # define color mapping logic with the mutate function 
 
-res_df28 <- res_df28 %>% 
+res_df18 <- res_df18 %>% 
   mutate(fill=case_when(
-    padj.18 < 0.05 & stat.18 < 0 ~ "lightblue",
-    padj.18 < 0.05 & stat.18 > 0 ~ "lightpink",
-    padj.22 < 0.05 & stat.22 < 0 ~ "darkblue",
-    padj.22 < 0.05 & stat.22 > 0 ~ "magenta4"
+    padj.28 < 0.05 & stat.28 < 0 ~ "lightblue",
+    padj.28 < 0.05 & stat.28 > 0 ~ "lightpink",
+    padj.33 < 0.05 & stat.33 < 0 ~ "darkblue",
+    padj.33 < 0.05 & stat.33 > 0 ~ "magenta4"
   ))
 
 #count the number of points per fill color
-color_counts <- res_df28 %>% 
+color_counts <- res_df18 %>% 
   group_by(fill) %>% 
   summarise(count = n())
   
@@ -256,7 +245,7 @@ label_positions <- data.frame(
 
 label_data <- merge(color_counts, label_positions, by="fill")
 
-plot28 <- ggplot(res_df28, aes(x=log2FoldChange.18, y=log2FoldChange.22, color=fill)) +
+plot18 <- ggplot(res_df18, aes(x=log2FoldChange.28, y=log2FoldChange.33, color=fill)) +
   geom_point(alpha=0.8)+
   scale_color_identity()+
   geom_text(data=label_data, aes(x=x_pos, y=y_pos, label=count, color=fill),
@@ -265,73 +254,73 @@ plot28 <- ggplot(res_df28, aes(x=log2FoldChange.18, y=log2FoldChange.22, color=f
   geom_abline(intercept = 0, slope = -1, linetype = "dashed", color = "black")+
   xlim(-10,10)+ylim(-10,10)+
   labs(x="Log2FoldChange 28 vs BASE at 18", 
-       y="Log2FoldChange 28 vs BASE at 22",
-       title = "How does response to 28C vary by DevTemp?")+
+       y="Log2FoldChange 33 vs BASE at 18",
+       title = "How does response to 18C vary by FinalTemp?")+
   theme_minimal()
-plot28
+plot18
 ########################################
 #Make a scatter plot of responses to A33 when copepods develop at 18vs22
 #contrast D18_BASEvsA33
 
-res_D18_BASEvsA33 <- as.data.frame(results(dds, contrast=c("group", "D18BASE", "D18A33"), 
+res_D22_BASEvsA28 <- as.data.frame(results(dds, contrast=c("group", "D22BASE", "D22A28"), 
                                            alpha = 0.05))
 # contrast D22_BASEvsA28
 res_D22_BASEvsA33 <- as.data.frame(results(dds, contrast=c("group", "D22BASE", "D22A33"), 
                                            alpha = 0.05))
 
 # merge dataframes 
-res_df33 <- merge(res_D18_BASEvsA33, res_D22_BASEvsA33, by="row.names",
-                  suffixes=c(".18", ".22"))
-rownames(res_df33) <- res_df33$Row.names
-res_df33 <- res_df33[,-1]
+res_df22 <- merge(res_D22_BASEvsA28, res_D22_BASEvsA33, by="row.names",
+                  suffixes=c(".28", ".33"))
+rownames(res_df22) <- res_df22$Row.names
+res_df22 <- res_df22[,-1]
 
 # color based on values in our data frame
 # define color mapping logic with the mutate function 
 
-res_df33 <- res_df33 %>% 
+res_df22 <- res_df22 %>% 
   mutate(fill=case_when(
-    padj.18 < 0.05 & stat.18 < 0 ~ "lightblue",
-    padj.18 < 0.05 & stat.18 > 0 ~ "lightpink",
-    padj.22 < 0.05 & stat.22 < 0 ~ "darkblue",
-    padj.22 < 0.05 & stat.22 > 0 ~ "magenta4"
+    padj.28 < 0.05 & stat.28 < 0 ~ "lightblue",
+    padj.28 < 0.05 & stat.28 > 0 ~ "lightpink",
+    padj.33 < 0.05 & stat.33 < 0 ~ "darkblue",
+    padj.33 < 0.05 & stat.33 > 0 ~ "magenta4"
   ))
 
 #count the number of points per fill color
-color_counts33 <- res_df33 %>% 
+color_counts22 <- res_df22 %>% 
   group_by(fill) %>% 
   summarise(count = n())
 
-label_positions33 <- data.frame(
+label_positions22 <- data.frame(
   fill=c("darkblue", "lightpink", "magenta4", "lightblue"),
   x_pos=c(1,5,0,-7.5),
   y_pos=c(-5,0,9,3)
 )
 
-label_data33 <- merge(color_counts33, label_positions33, by="fill")
+label_data22 <- merge(color_counts22, label_positions22, by="fill")
 
 
-plot33 <- ggplot(res_df33, aes(x=log2FoldChange.18, y=log2FoldChange.22, color=fill)) +
+plot22 <- ggplot(res_df22, aes(x=log2FoldChange.28, y=log2FoldChange.33, color=fill)) +
   geom_point(alpha=0.8)+
   scale_color_identity()+
-  geom_text(data=label_data33, aes(x=x_pos, y=y_pos, label=count, color=fill),
+  geom_text(data=label_data22, aes(x=x_pos, y=y_pos, label=count, color=fill),
             size= 5)+
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black")+
   geom_abline(intercept = 0, slope = -1, linetype = "dashed", color = "black")+
   xlim(-10,10)+ylim(-10,10)+
-  labs(x="Log2FoldChange 33 vs BASE at 18", 
+  labs(x="Log2FoldChange 28 vs BASE at 22", 
        y="Log2FoldChange 33 vs BASE at 22",
-       title = "How does response to 33C vary by DevTemp?")+
+       title = "How does response to 22C vary by FinalTemp?")+
   theme_minimal()
-plot33
+plot22
 
 #put the 2 scatter plots together
 library(gridExtra)
 
-combined_scatter_plot <- grid.arrange(plot28, plot33, ncol=2)
+combined_plot_18_22 <- grid.arrange(plot18, plot22, ncol=2)
 
 
-ggsave("~/Projects/eco_geno/transcriptomics/figures/combined_scatter_plot.png", 
-       combined_scatter_plot, width = 12, height = 6)
+ggsave("~/Projects/eco_geno/transcriptomics/figures/combined_plot_18_22.png", 
+       combined_plot_18_22, width = 12, height = 6)
 
 
 
