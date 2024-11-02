@@ -139,14 +139,14 @@ length(intersect(degs_D22_BASE_D22_A28, degs_D22_BASE_D22_A33)) # 144 D22
 myEuler18 <- euler(c("D18A28"=7, "D18A33"=298, "D18A28&D18A33"=34))
 
 
-plot(myEuler18, lty=1:2, quantities=TRUE, fill=c("wheat", "indianred3", "lightcoral"))
+plot(myEuler18, lty=1:2, quantities=TRUE, fill=c("lightblue", "darkseagreen", "aquamarine3"))
 
 289-144 # 145 uniq genes at 22BASE22A28
-1564-144 # 1420
+1564-144 # 1420 
 
 myEuler22 <- euler(c("D22A28"=145, "D22A33"=1420, "D22A28&D22A33"=144))
 
-plot(myEuler22, lty=1:2, quantities=TRUE, fill=c("lightblue", "darkseagreen", "aquamarine3"))
+plot(myEuler22, lty=1:2, quantities=TRUE, fill=c("wheat", "indianred3", "lightcoral"))
 
 
 ########################################################
