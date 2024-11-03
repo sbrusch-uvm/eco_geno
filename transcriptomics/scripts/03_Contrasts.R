@@ -69,8 +69,7 @@ length(degs_D18_A33_D22_A33) # 78 DEGs between D18A33 and D22A33
 length(intersect(degs_D18_BASE_D22_BASE, degs_D18_A28_D22_A28)) # 107
 length(intersect(degs_D18_BASE_D22_BASE, degs_D18_A33_D22_A33)) # 44
 length(intersect(degs_D18_A28_D22_A28, degs_D18_A33_D22_A33)) # 29
-length(intersect(degs_D18_BASE_D22_BASE, 
-                 intersect(degs_D18_A28_D22_A28, degs_D18_A33_D22_A33))) # 23
+length(intersect(degs_D18_BASE_D22_BASE, intersect(degs_D18_A28_D22_A28, degs_D18_A33_D22_A33))) # 23
 
 
 ##### Pickup 10/22/24
