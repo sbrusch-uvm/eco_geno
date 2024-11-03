@@ -64,7 +64,7 @@ dds <- DESeq(dds)
 dim(dds) # 35527    21
 resultsNames(dds) 
 
-# 1. Compare baseline gene expression D18 between treatment groups A28 and A33
+# 1. Compare gene expression D18BASE to D18A28
 res_D18_BASE_D18_A28 <- results(dds, contrast = c("group", "D18BASE", "D18A28"), alpha = 0.05)
 res_D18_BASE_D18_A28 <-  res_D18_BASE_D18_A28[!is.na(res_D18_BASE_D18_A28$padj),]
 res_D18_BASE_D18_A28 <- res_D18_BASE_D18_A28[order(res_D18_BASE_D18_A28$padj),]
@@ -77,7 +77,7 @@ degs_D18_BASE_D18_A28 <- row.names(res_D18_BASE_D18_A28[res_D18_BASE_D18_A28$pad
 
 plotMA(res_D18_BASE_D18_A28, ylim=c(-4,4))
 
-# 2. compare baseline gene expression between developmental treatment groups
+# 2. Compare gene expression D18BASE to D18A33
 res_D18_BASE_D18_A33 <- results(dds, contrast = c("group", "D18BASE", "D18A33"), alpha = 0.05)
 res_D18_BASE_D18_A33 <-  res_D18_BASE_D18_A33[!is.na(res_D18_BASE_D18_A33$padj),]
 res_D18_BASE_D18_A33 <- res_D18_BASE_D18_A33[order(res_D18_BASE_D18_A33$padj),]
@@ -90,7 +90,7 @@ degs_D18_BASE_D18_A33 <- row.names(res_D18_BASE_D18_A33[res_D18_BASE_D18_A33$pad
 
 plotMA(res_D18_BASE_D18_A33, ylim=c(-4,4)) 
 
-# 3. compare baseline gene expression between developmental treatment groups 
+# 3. Compare gene expression D22BASE to D22A28
 res_D22_BASE_D22_A28 <- results(dds, contrast = c("group", "D22BASE", "D22A28"), alpha = 0.05)
 res_D22_BASE_D22_A28 <-  res_D22_BASE_D22_A28[!is.na(res_D22_BASE_D22_A28$padj),]
 res_D22_BASE_D22_A28 <- res_D22_BASE_D22_A28[order(res_D22_BASE_D22_A28$padj),]
@@ -103,7 +103,7 @@ degs_D22_BASE_D22_A28 <- row.names(res_D22_BASE_D22_A28[res_D22_BASE_D22_A28$pad
 
 plotMA(res_D22_BASE_D22_A28, ylim=c(-4,4))
 
-# 4. compare baseline gene expression between developmental treatment groups
+# 4. Compare gene expression D22BASE to D22A33
 res_D22_BASE_D22_A33 <- results(dds, contrast = c("group", "D22BASE", "D22A33"), alpha = 0.05)
 res_D22_BASE_D22_A33 <-  res_D22_BASE_D22_A33[!is.na(res_D22_BASE_D22_A33$padj),]
 res_D22_BASE_D22_A33 <- res_D22_BASE_D22_A33[order(res_D22_BASE_D22_A33$padj),]
@@ -150,10 +150,9 @@ plot(myEuler22, lty=1:2, quantities=TRUE, fill=c("wheat", "indianred3", "lightco
 
 
 ########################################################
-#Make a scatter plot of responses to A28 when copepods develop at 18vs22
+##Make a scatter plot of responses to A28 and A33 when copepods develop at 18
 
 #contrast D18_BASEvsA28
-
 res_D18_BASEvsA28 <- as.data.frame(results(dds, contrast=c("group", "D18BASE", "D18A28"), 
                                            alpha = 0.05))
 # contrast D22_BASEvsA28
@@ -206,13 +205,13 @@ plot18 <- ggplot(res_df18, aes(x=log2FoldChange.28, y=log2FoldChange.33, color=f
   xlim(-10,10)+ylim(-10,10)+
   labs(x="Log2FoldChange 28 vs BASE at 18", 
        y="Log2FoldChange 33 vs BASE at 18",
-       title = "How does response to 18C vary by FinalTemp?")+
+       title = "How does DevTemp 18C influence response to 28C and 33C?")+
   theme_minimal()
 plot18
 ########################################
-#Make a scatter plot of responses to A33 when copepods develop at 18vs22
-#contrast D18_BASEvsA33
+#Make a scatter plot of responses to A28 and A33 when copepods develop at 22
 
+# contrast D22_BASEvsA28
 res_D22_BASEvsA28 <- as.data.frame(results(dds, contrast=c("group", "D22BASE", "D22A28"), 
                                            alpha = 0.05))
 # contrast D22_BASEvsA28
@@ -260,7 +259,7 @@ plot22 <- ggplot(res_df22, aes(x=log2FoldChange.28, y=log2FoldChange.33, color=f
   xlim(-10,10)+ylim(-10,10)+
   labs(x="Log2FoldChange 28 vs BASE at 22", 
        y="Log2FoldChange 33 vs BASE at 22",
-       title = "How does response to 22C vary by FinalTemp?")+
+       title = "How does DevTemp 22C influence response to 28C and 33C?")+
   theme_minimal()
 plot22
 
