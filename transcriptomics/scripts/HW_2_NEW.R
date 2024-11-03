@@ -88,9 +88,9 @@ summary(res_D18_BASE_D18_A33) # 92 genes upregulated, 240 downregulated genes
 degs_D18_BASE_D18_A33 <- row.names(res_D18_BASE_D18_A33[res_D18_BASE_D18_A33$padj < 0.05,])
 
 
-plotMA(res_D18_BASE_D18_A33, ylim=c(-4,4))
+plotMA(res_D18_BASE_D18_A33, ylim=c(-4,4)) 
 
-# 3. compare baseline gene expression between developmental treatment groups
+# 3. compare baseline gene expression between developmental treatment groups 
 res_D22_BASE_D22_A28 <- results(dds, contrast = c("group", "D22BASE", "D22A28"), alpha = 0.05)
 res_D22_BASE_D22_A28 <-  res_D22_BASE_D22_A28[!is.na(res_D22_BASE_D22_A28$padj),]
 res_D22_BASE_D22_A28 <- res_D22_BASE_D22_A28[order(res_D22_BASE_D22_A28$padj),]
@@ -142,7 +142,7 @@ myEuler18 <- euler(c("D18A28"=7, "D18A33"=298, "D18A28&D18A33"=34))
 plot(myEuler18, lty=1:2, quantities=TRUE, fill=c("lightblue", "darkseagreen", "aquamarine3"))
 
 289-144 # 145 uniq genes at 22BASE22A28
-1564-144 # 1420 
+1564-144 # 1420 "lightblue", "darkseagreen", "aquamarine3"
 
 myEuler22 <- euler(c("D22A28"=145, "D22A33"=1420, "D22A28&D22A33"=144))
 

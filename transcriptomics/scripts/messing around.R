@@ -159,10 +159,11 @@ length(intersect(nested_cool, nested_warm)) # 4 shared for all
 4-4 # warm/blue = 0
 14-4 # warm/green = 10
 
-EulerPlot <- euler(c("D18A28"=0, "D18A33"=253, "D22A28"=85, "D22A33"=1302, 
-                   "D18A28&D22A33"=0, "D18A28&D22A28"=0, "D18A33&D22A28"=0, "D18A33&D22A33"=151,
-                   "D18A28&D18A33&D22A33"=25, "D18A28&D18A33&D22A28"=0, "D18A28&D22A28&D22A33"=0, "D18A33&D22A28&D22A33"=10,
-                   "D18A28&D18A33&D22A28&D22A33"=4))
+
+EulerPlot <- euler(c("D18A28"=0, "D22A28"=85, "D18A33"=253, "D22A33"=1302, 
+                     "D18A28&D22A28"=0, "D18A33&D22A28"=0, "D18A33&D22A33"=151, "D18A28&D22A33"=0,
+                     "D18A28&D22A28&D22A33"=0, "D18A28&D18A33&D22A28"=0, "D18A33&D22A28&D22A33"=10, "D18A28&D18A33&D22A33"=25,
+                     "D18A28&D18A33&D22A28&D22A33"=4))
 plot(EulerPlot, lty=1:4, quantities=T)
 
 
