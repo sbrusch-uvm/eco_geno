@@ -14,8 +14,6 @@
 
 -   made a barplot
 
--   
-
 ## October 15, 2024
 
 -   we ran the 01_DESeq2_explore code to load in our data
@@ -40,6 +38,47 @@
 
 ## October 17, 2024
 
+-   03_Contrasts
 -   remember that everything is a comparison, what is being compared to what
-
 -   looked at contrasts between the developmental temps and their final temps
+-   we looked at the DEGs
+
+## October 22, 2024
+
+-   today we focused on making the euler plots from the DEGs
+
+-   found the unique DEGs for the treatment groups
+
+-   We made 2 scatter plots of the merged data of the acute thermal exposure to 28C and 33C
+
+-   the DEGs are the statistically significant points, colored to match which treatment group
+
+## October 24, 2024
+
+-   analyzing and visualizing gene correlation networks
+
+-   all about WGNCA
+
+    -   setting it up
+
+        -   step 1 import counts matrix
+
+        -   step 2 detect outliers
+
+        -   step 3 normalization
+
+        -   step 4 network construction
+
+## October 29, 2024
+
+-   WGCNA continued
+
+    -   step 5 explore module eigengenes
+
+    -   step 6 correlation of modules with traits
+
+    -   made a heatmap of correlations
+
+## October 31, 2024
+
+-   working on HW #2
