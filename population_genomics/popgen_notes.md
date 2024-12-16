@@ -171,3 +171,8 @@ CentPCA\$eigenvectors[1:5, 1:2] in console gives the head of V1 and V2 the eigen
 value -0.08, going from 0-2 gives a vector of -0.08 and 0.046 so its vector towards neg x axis and pos y axis
 
 nice way to look at genetic structure without priority
+
+
+### Final Project Notes
+
+I worked on the PCA and Admixture part of the Sea Star Wasting Disease project. After some trouble shooting with Aly, she was able to create the VCF file that I would be able to use for the analysis. I pulled code from what we had done in class to create new plots. There were many trouble shooting points where we met with Steve to go over why some file types wouldn't run. The fixed heterozygotes needed to be removed from the file since they were messing up how to code was running. Later, the indels needed to be removed as well. It was a lot of trouble shooting and then later trying to help in any way with what the other group members were working on. I helped and generated all the Pi vs Theta graphs for the chromosomes. 
